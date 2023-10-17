@@ -1,0 +1,75 @@
+class Solution {
+public:
+    std::vector<int> leftChildGlobal, rightChildGlobal;
+    std::vector<bool> visited;
+
+    bool dfs(int node) {
+        if (node == -1 || visited[node]) {
+            return false;
+        }
+        visited[node] = true;
+        bool left_visit = dfs(leftChildGlobal[node]);
+        bool right_visit = dfs(rightChildGlobal[node]);
+        return left_visit || right_visit;
+    }
+
+    bool validateBinaryTreeNodes(int n, std::vector<int>& leftChild, std::vector<int>& rightChild) {
+        // Create an in-degree array
+        std::vector<int> indegree(n, 0);
+
+        // Set global vectors
+        leftChildGlobal = leftChild;
+        rightChildGlobal = rightChild;
+        visited.assign(n, false);
+
+        // Calculate in-degree for each node
+        for (int i = 0; i < n; ++i) {
+            if (leftChild[i] != -1) {
+                indegree[leftChild[i]] += 1;
+            }
+            if (rightChild[i] != -1) {
+                indegree[rightChild[i]] += 1;
+            }
+        }
+
+        // There must be exactly one node with an in-degree of 0
+        int zeroCount = 0;
+        for (int i = 0; i < n; ++i) {
+            if (indegree[i] == 0) {
+                zeroCount++;
+            }
+        }
+        if (zeroCount != 1) {
+            return false;
+        }
+
+        // All other nodes must have an in-degree of 1
+        int oneCount = 0;
+        for (int i = 0; i < n; ++i) {
+            if (indegree[i] == 1) {
+                oneCount++;
+            }
+        }
+        if (oneCount != n - 1) {
+            return false;
+        }
+
+        // Call the dfs
+        int rootIndex = -1;
+        for (int i = 0; i < n; ++i) {
+            if (indegree[i] == 0) {
+                rootIndex = i;
+                break;
+            }
+        }
+        dfs(rootIndex); // Start from the root node
+
+        // If there's any unvisited node, it means the graph isn't connected
+        for (bool v : visited) {
+            if (!v) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
